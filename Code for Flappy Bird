@@ -1,1 +1,99 @@
-c
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flappy Bird</title>
+    <style>
+        canvas {
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="480" height="320"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gravity = 0.6;
+        let birdY = 160;
+        let birdVelocity = 0;
+        let score = 0;
+        let pipes = [];
+        let gameState = 0; // 0: ready, 1: playing, 2: game over
+
+        function drawBird() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(50, birdY, 20, 20);
+        }
+
+        function drawPipes() {
+            ctx.fillStyle = 'green';
+            pipes.forEach(pipe => {
+                ctx.fillRect(pipe.x, 0, 50, pipe.gapY);
+                ctx.fillRect(pipe.x, pipe.gapY + 150, 50, 320 - (pipe.gapY + 150));
+            });
+        }
+
+        function drawScore() {
+            ctx.fillStyle = 'black';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Score: ${score}`, 10, 20);
+        }
+
+        function updateGame() {
+            if (gameState === 0) {
+                // Ready screen
+                ctx.fillStyle = 'lightblue';
+                ctx.fillRect(0, 0, 480, 320);
+                ctx.fillStyle = 'black';
+                ctx.font = '30px Arial';
+                ctx.fillText('Press space to start', 100, 160);
+            } else if (gameState === 1) {
+                // Playing
+                ctx.clearRect(0, 0, 480, 320);
+                drawBird();
+                drawPipes();
+                drawScore();
+
+                birdVelocity += gravity;
+                birdY += birdVelocity;
+
+                pipes.forEach(pipe => {
+                    pipe.x -= 2;
+                });
+
+                if (birdY <= 0 || birdY + 20 >= 320) {
+                    gameState = 2;
+                }
+
+                if (pipes.length === 0 || pipes[0].x + 50 < 50) {
+                    pipes.push({
+                        x: 480,
+                        gapY: Math.floor(Math.random() * 150) + 50
+                    });
+                }
+
+                if (pipes[0].x + 50 < 50) {
+                    score++;
+                }
+
+                if (pipes[0].x + 50 < -50 || pipes[0].x + 50 > 480 || (birdY < pipes[0].gapY + 50 && birdY + 20 > pipes[0].gapY + 50)) {
+                    gameState = 2;
+                }
+            } else if (gameState === 2) {
+                // Game over screen
+                ctx.fillStyle = 'red';
+                ctx.fillRect(0, 0, 480, 320);
+                ctx.fillStyle = 'black';
+                ctx.font = '30px Arial';
+                ctx.fillText('Game Over', 150, 160);
+                ctx.fillText(`Score: ${score}`, 150, 200);
+            }
+
+            requestAnimationFrame(updateGame);
+        }
+
+        document.addEventListener
